@@ -89,8 +89,8 @@ Version‑specific sorting:
 2. Build with make:
 
    ```bash
-  make clean
-  make all
+   make clean
+   make all
    ```
 
 ---
