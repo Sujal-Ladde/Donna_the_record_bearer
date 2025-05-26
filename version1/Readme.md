@@ -56,7 +56,7 @@ A simple command-line address book application using a fixed-size array and bubb
 1. Clone the repository and navigate to version 1:
 
    ```bash
-   git clone https://github.com/Sujal-Ladde/Donna--the-Record-Bearer/tree/master/version1
+   git clone https://github.com/Sujal-Ladde/Donna_the_record_bearer/tree/main/version1
    cd address-book-donna/v1
    ```
 2. Build with the provided Makefile:
