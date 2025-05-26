@@ -2,13 +2,14 @@
 
 int main()
 {
+/**
+ * initialize
+ * ------------------
+ * What: Loads contacts from CSV into the linked list and shows intro.
+ * Args: none
+ * Returns: void
+ * Logic: Opens "contacts.csv", reads each line, sscanf into a new Node,
+ *        pushes onto head, increments count, then closes file and calls infoscreen().
+ */
     initialize();
 }
-
-
-// why linked list 
-// 1. array is single block of memory , malloc is DYNAMIC
-// 2. array in stack , malloc in Heap. stack is precious, heap is far hence it cam=n be used to store data and stack can be used for something else, chances of stack over flow is eliminated,
-// 3. no unwanted memory used.
-//
-

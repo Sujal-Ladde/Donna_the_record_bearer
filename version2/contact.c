@@ -1,31 +1,64 @@
 #include "contact.h"
 
 #define LINE_LEN 58
-// static void printLine() { for (int i = 0; i < LINE_LEN; i++) putchar('-'); putchar('\n'); }
 
 Node *head = NULL;
 int count = 0;
 static FILE *pF = NULL;
 
-// Utils
+
+/**
+ * clearBuffer
+ * ------------------
+ * What: Clears the terminal screen and flushes stdout.
+ * Args: none
+ * Returns: void
+ * Logic: Calls system("clear") then fflush(stdout) to ensure output is clean.
+ */
 void clearBuffer()
 {
     system("clear");
     fflush(stdout);
 }
+
+/**
+ * clearInputBuffer
+ * ------------------
+ * What: Discards any leftover characters in stdin until newline/EOF.
+ * Args: none
+ * Returns: void
+ * Logic: Loops getchar() until '\n' or EOF.
+ */
 void clearInputBuffer()
 {
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
         ;
 }
+
+/**
+ * my_pause
+ * ------------------
+ * What: Prompts the user to press a key before continuing.
+ * Args: none
+ * Returns: void
+ * Logic: Prints a message, then calls getchar() to wait.
+ */
 void my_pause()
 {
     printf("Press any key to continue...");
     getchar();
 }
 
-// Initialize from CSV + intro
+/**
+ * initialize
+ * ------------------
+ * What: Loads contacts from CSV into the linked list and shows intro.
+ * Args: none
+ * Returns: void
+ * Logic: Opens "contacts.csv", reads each line, sscanf into a new Node,
+ *        pushes onto head, increments count, then closes file and calls infoscreen().
+ */
 void initialize()
 {
     pF = fopen("contacts.csv", "r");
@@ -51,7 +84,14 @@ void initialize()
     infoscreen();
 }
 
-// Intro Screen
+/**
+ * infoscreen
+ * ------------------
+ * What: Displays the application title/introduction screen.
+ * Args: none
+ * Returns: void
+ * Logic: Calls clearBuffer(), prints banner & description, pauses, then calls loginPage().
+ */
 void infoscreen()
 {
     clearBuffer();
@@ -65,6 +105,15 @@ void infoscreen()
     my_pause();
     loginPage();
 }
+
+/**
+ * endScreen
+ * ------------------
+ * What: Displays the closing screen and exits the program.
+ * Args: none
+ * Returns: void (exits via exit(0))
+ * Logic: Prints developer info, then calls exit(0).
+ */
 void endScreen()
 {
     clearBuffer();
@@ -77,12 +126,17 @@ void endScreen()
     printf("\t\t\t\t------------------------------------------ \n");
     printf("\t\t\t\t\t\tThank You. \n");
     printf("\t\t\t\t------------------------------------------ \n\n");
-    // Sleep(1500);  // pause the screen for 3 seconds
-    exit(0); // ends the program safely
+    exit(0);
 }
 
-
-// Main menu
+/**
+ * loginPage
+ * ------------------
+ * What: Shows the main menu and dispatches based on user choice.
+ * Args: none
+ * Returns: void
+ * Logic: Clears screen, prints options, reads choice, calls corresponding function.
+ */
 void loginPage()
 {
     clearBuffer();
@@ -105,33 +159,15 @@ void loginPage()
     clearInputBuffer();
     switch (choice)
     {
-    case 1:
-        addcontact();
-        break;
-    case 2:
-        editcontact();
-        break;
-    case 3:
-        displaycontacts();
-        break;
-    case 4:
-        searchcontact();
-        break;
-    case 5:
-        deletecontact();
-        break;
-    case 6:
-        Deleteall();
-        break;
-    case 7:
-        displaySortedContacts();
-        break;
-    case 9:
-        save();
-        break;
-    case 0:
-        Exit();
-        break;
+    case 1: addcontact();             break;
+    case 2: editcontact();            break;
+    case 3: displaycontacts();        break;
+    case 4: searchcontact();          break;
+    case 5: deletecontact();          break;
+    case 6: Deleteall();              break;
+    case 7: displaySortedContacts();  break;
+    case 9: save();                   break;
+    case 0: Exit();                   break;
     default:
         printf("---------------------------------------\n");
         printf("ERROR: Invalid input please try again. \n");
@@ -141,30 +177,71 @@ void loginPage()
     }
 }
 
+/**
+ * addcontact
+ * ------------------
+ * What: Prompts the user to add one or more new contacts.
+ * Args: none
+ * Returns: void
+ * Logic: Reads count n, loops n times reading and validating name/phone/email,
+ *        prepends each new Node to head, increments count, then shows the last n added.
+ */
 void addcontact() {
     clearBuffer();
     int n; char buf[50];
     printf("\t\t\t\tAdd Contacts (enter 0 to cancel) \n");
-    printf("\t\t\t\tEnter number of contacts to add: "); scanf("%d", &n); clearInputBuffer();
+    printf("\t\t\t\tEnter number of contacts to add: ");
+    scanf("%d", &n); clearInputBuffer();
     if (n <= 0) { loginPage(); return; }
+
     for (int i = 0; i < n; i++) {
         Node *nw = malloc(sizeof *nw);
-        do { printf("Name: "); fgets(buf, sizeof buf, stdin); buf[strcspn(buf, "\n")] = '\0'; } while (!isvalidname(buf));
+        do {
+            printf("Name: ");
+            fgets(buf, sizeof buf, stdin);
+            buf[strcspn(buf, "\n")] = '\0';
+        } while (!isvalidname(buf));
         strcpy(nw->name, buf);
-        do { printf("Phone: "); fgets(buf, sizeof buf, stdin); buf[strcspn(buf, "\n")] = '\0'; } while (!isvalidnumber(buf) || checkphone(buf));
+
+        do {
+            printf("Phone: ");
+            fgets(buf, sizeof buf, stdin);
+            buf[strcspn(buf, "\n")] = '\0';
+        } while (!isvalidnumber(buf) || checkphone(buf));
         strcpy(nw->phone, buf);
-        do { printf("Email: "); fgets(buf, sizeof buf, stdin); buf[strcspn(buf, "\n")] = '\0'; } while (!isvalidemail(buf) || checkemail(buf));
+
+        do {
+            printf("Email: ");
+            fgets(buf, sizeof buf, stdin);
+            buf[strcspn(buf, "\n")] = '\0';
+        } while (!isvalidemail(buf) || checkemail(buf));
         strcpy(nw->email, buf);
-        nw->next = head; head = nw; count++;
+
+        nw->next = head;
+        head = nw;
+        count++;
     }
+
     clearBuffer();
     printf("\t\t|-------------------------------------------------------------------------| \n");
-    printf("\t\t| %-20s | %-15s | %-30s | \n", "Name", "Phone Number", "Email"); // Adjust widths
-    printf("\t\t|-------------------------------------------------------------------------| \n");    Node *p = head; for (int i = 0; i < n && p; i++, p = p->next)
-    printf("\t\t| %-20s | %-15s | %-30s  \n", p->name, p->phone, p->email);
-    my_pause(); loginPage();
+    printf("\t\t| %-20s | %-15s | %-30s | \n", "Name", "Phone Number", "Email");
+    printf("\t\t|-------------------------------------------------------------------------| \n");
+    Node *p = head;
+    for (int i = 0; i < n && p; i++, p = p->next)
+        printf("\t\t| %-20s | %-15s | %-30s  \n", p->name, p->phone, p->email);
+
+    my_pause();
+    loginPage();
 }
 
+/**
+ * displaycontacts
+ * ------------------
+ * What: Displays all contacts in a table.
+ * Args: none
+ * Returns: void
+ * Logic: Prints header with total count, then iterates the linked list printing each Node.
+ */
 void displaycontacts() {
     clearBuffer();
     printf("\t\t\t\t\t----------------------------- \n");
@@ -172,15 +249,22 @@ void displaycontacts() {
     printf("\t\t\t\t\t----------------------------- \n");
     printf("\t\t\t\t\t    Total Contacts = %d\n", count);
     printf("\t\t|-------------------------------------------------------------------------| \n");
-    printf("\t\t| %-20s | %-15s | %-30s | \n", "Name", "Phone Number", "Email"); // Adjust widths
-    printf("\t\t|-------------------------------------------------------------------------| \n");
-    printf("\n");
+    printf("\t\t| %-20s | %-15s | %-30s | \n", "Name", "Phone Number", "Email");
+    printf("\t\t|-------------------------------------------------------------------------| \n\n");
     for (Node *p = head; p; p = p->next)
         printf("\t\t| %-20s | %-15s | %-30s  \n", p->name, p->phone, p->email);
-    my_pause(); loginPage();
+    my_pause();
+    loginPage();
 }
 
-// Search menu
+/**
+ * searchcontact
+ * ------------------
+ * What: Presents a submenu to search by name/phone/email.
+ * Args: none
+ * Returns: void
+ * Logic: Reads choice, then calls searchByName/Number/Email accordingly.
+ */
 void searchcontact()
 {
     clearBuffer();
@@ -195,37 +279,37 @@ void searchcontact()
     int ch;
     scanf("%d", &ch);
     clearInputBuffer();
-    if (!ch)
-        loginPage();
-    if (ch == 1)
-        searchByName();
-    else if (ch == 2)
-        searchByNumber();
-    else if (ch == 3)
-        searchByEmail();
-    else
-    {
+    if (!ch)                        { loginPage(); return; }
+    if (ch == 1)                    searchByName();
+    else if (ch == 2)               searchByNumber();
+    else if (ch == 3)               searchByEmail();
+    else {
         printf("Invalid\n");
         my_pause();
         searchcontact();
     }
 }
 
+/**
+ * searchByName
+ * ------------------
+ * What: Finds and displays contacts whose name contains the query.
+ * Args:
+ *   char buf[]  – the substring to match
+ * Returns: void
+ * Logic: Reads a line into buf, iterates list, uses strstr() to filter and print.
+ */
 void searchByName()
 {
-     clearBuffer();
+    clearBuffer();
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t\t\t     >>> Search By Name <<< \n");
-    printf("\t\t|---------------------------------------------------------------| \n");
-    printf("\n\t\t\t   (Enter 0 to go back to the main menu)\n\n");
+    printf("\t\t|---------------------------------------------------------------| \n\n");
     char buf[50];
     fgets(buf, sizeof buf, stdin);
     buf[strcspn(buf, "\n")] = '\0';
-    if (!strcmp(buf, "0"))
-    {
-        loginPage();
-        return;
-    }
+    if (!strcmp(buf, "0")) { loginPage(); return; }
+
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t| \tName\t| \tPhone Number\t  |  \t Email\t\t| \n");
     printf("\t\t|---------------------------------------------------------------| \n");
@@ -236,25 +320,29 @@ void searchByName()
     loginPage();
 }
 
+/**
+ * searchByNumber
+ * ------------------
+ * What: Finds and displays contacts whose phone contains the query.
+ * Args:
+ *   char buf[]  – the substring to match
+ * Returns: void
+ * Logic: Reads buf, iterates list, strstr() on p->phone, prints matches.
+ */
 void searchByNumber()
 {
-     clearBuffer();
+    clearBuffer();
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t\t\t     >>> Search By Phone Number <<< \n");
-    printf("\t\t|---------------------------------------------------------------| \n");
-    printf("\n\t\t\t   (Enter 0 to go back to the main menu)\n\n");
+    printf("\t\t|---------------------------------------------------------------| \n\n");
     char buf[50];
     fgets(buf, sizeof buf, stdin);
     buf[strcspn(buf, "\n")] = '\0';
-    if (!strcmp(buf, "0"))
-    {
-        loginPage();
-        return;
-    }
-     printf("\t\t|---------------------------------------------------------------| \n");
+    if (!strcmp(buf, "0")) { loginPage(); return; }
+
+    printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t| \tName\t| \tPhone Number\t  |  \t Email\t\t| \n");
     printf("\t\t|---------------------------------------------------------------| \n");
-
     for (Node *p = head; p; p = p->next)
         if (strstr(p->phone, buf))
             printf("\t\t| %-20s | %-15s | %-30s |\n", p->name, p->phone, p->email);
@@ -262,21 +350,26 @@ void searchByNumber()
     loginPage();
 }
 
+/**
+ * searchByEmail
+ * ------------------
+ * What: Finds and displays contacts whose email contains the query.
+ * Args:
+ *   char buf[]  – the substring to match
+ * Returns: void
+ * Logic: Reads buf, iterates list, strstr() on p->email, prints matches.
+ */
 void searchByEmail()
 {
-     clearBuffer();
+    clearBuffer();
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t\t\t     >>> Search By Email <<< \n");
-    printf("\t\t|---------------------------------------------------------------| \n");
-    printf("\n\t\t\t   (Enter 0 to go back to the main menu)\n\n");
+    printf("\t\t|---------------------------------------------------------------| \n\n");
     char buf[50];
     fgets(buf, sizeof buf, stdin);
     buf[strcspn(buf, "\n")] = '\0';
-    if (!strcmp(buf, "0"))
-    {
-        loginPage();
-        return;
-    }
+    if (!strcmp(buf, "0")) { loginPage(); return; }
+
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t| \tName\t| \tPhone Number\t  |  \t Email\t\t| \n");
     printf("\t\t|---------------------------------------------------------------| \n");
@@ -287,7 +380,15 @@ void searchByEmail()
     loginPage();
 }
 
-// Delete single contact
+/**
+ * deletecontact
+ * ------------------
+ * What: Deletes a specific contact, searching by name/phone/email with disambiguation.
+ * Args: none
+ * Returns: void
+ * Logic: Presents search-by menu, collects all exact matches, if >1 lets user pick,
+ *        then unlinks/frees the chosen node and decrements count.
+ */
 void deletecontact()
 {
     clearBuffer();
@@ -303,10 +404,7 @@ void deletecontact()
     int opt;
     scanf("%d", &opt);
     clearInputBuffer();
-    if (opt == 0) {
-        loginPage();
-        return;
-    }
+    if (opt == 0) { loginPage(); return; }
     if (opt < 1 || opt > 3) {
         printf("Invalid choice.\n");
         my_pause();
@@ -319,18 +417,15 @@ void deletecontact()
     printf("\nEnter %s (exact match): ", field);
     fgets(query, sizeof query, stdin);
     query[strcspn(query, "\n")] = '\0';
-    if (!strcmp(query, "0")) {
-        loginPage();
-        return;
-    }
+    if (!strcmp(query, "0")) { loginPage(); return; }
 
-    // Collect matches
     Node *matches[100];
     int mcount = 0;
     for (Node *p = head; p; p = p->next) {
         if ((opt == 1 && !strcmp(p->name, query)) ||
             (opt == 2 && !strcmp(p->phone, query)) ||
-            (opt == 3 && !strcmp(p->email, query))) {
+            (opt == 3 && !strcmp(p->email, query)))
+        {
             matches[mcount++] = p;
         }
     }
@@ -342,7 +437,6 @@ void deletecontact()
         return;
     }
 
-    // If multiple matches, let user pick one
     int choice = 0;
     if (mcount > 1) {
         printf("\nFound %d matching contacts:\n\n", mcount);
@@ -362,22 +456,14 @@ void deletecontact()
             loginPage();
             return;
         }
-        choice--;  // zero-based index
+        choice--;
     }
-    // If exactly one match, choice defaults to 0:
-    Node *target = matches[ (mcount == 1) ? 0 : choice ];
 
-    // Unlink target from the list
+    Node *target = matches[(mcount == 1) ? 0 : choice];
     Node *prev = NULL, *cur = head;
     while (cur && cur != target) {
         prev = cur;
         cur = cur->next;
-    }
-    if (!cur) {
-        printf("Error locating contact.\n");
-        my_pause();
-        loginPage();
-        return;
     }
     if (prev) prev->next = cur->next;
     else       head       = cur->next;
@@ -389,23 +475,27 @@ void deletecontact()
     loginPage();
 }
 
-
-// Delete all
+/**
+ * Deleteall
+ * ------------------
+ * What: Deletes every contact in the list after confirmation.
+ * Args: none
+ * Returns: void
+ * Logic: Prompts Y/N; if yes, iterates freeing all nodes, resets head and count.
+ */
 void Deleteall()
 {
     clearBuffer();
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t\t\t   >>> DELETE ALL CONTACTS!! <<< \n");
-    printf("\t\t|---------------------------------------------------------------| \n");
-    printf("\n\n\t\tAre you sure you want to delete all contacts? (Y/N) - ");
+    printf("\t\t|---------------------------------------------------------------| \n\n");
+    printf("\t\tAre you sure you want to delete all contacts? (Y/N) - ");
     char c;
     scanf(" %c", &c);
     clearInputBuffer();
-    if (c == 'Y' || c == 'y')
-    {
+    if (c == 'Y' || c == 'y') {
         Node *cur = head;
-        while (cur)
-        {
+        while (cur) {
             Node *tmp = cur;
             cur = cur->next;
             free(tmp);
@@ -413,16 +503,22 @@ void Deleteall()
         head = NULL;
         count = 0;
         printf("\nAll contacts deleted successfully!\n");
-    }
-    else
-    {
+    } else {
         printf("\nOperation Cancelled!\n");
     }
     my_pause();
     loginPage();
 }
 
-// Edit contact
+/**
+ * editcontact
+ * ------------------
+ * What: Finds and edits a single contact by name/phone/email.
+ * Args: none
+ * Returns: void
+ * Logic: Similar to deletecontact(), but after selecting the node,
+ *        prompts which field to update, validates input, and applies change.
+ */
 void editcontact()
 {
     clearBuffer();
@@ -438,10 +534,7 @@ void editcontact()
     int opt;
     scanf("%d", &opt);
     clearInputBuffer();
-    if (opt == 0) {
-        loginPage();
-        return;
-    }
+    if (opt == 0) { loginPage(); return; }
     if (opt < 1 || opt > 3) {
         printf("Invalid choice.\n");
         my_pause();
@@ -454,18 +547,15 @@ void editcontact()
     printf("\nEnter %s (exact match): ", field);
     fgets(query, sizeof query, stdin);
     query[strcspn(query, "\n")] = '\0';
-    if (!strcmp(query, "0")) {
-        loginPage();
-        return;
-    }
+    if (!strcmp(query, "0")) { loginPage(); return; }
 
-    // 1. Gather matches
     Node *matches[100];
     int mcount = 0;
     for (Node *p = head; p; p = p->next) {
         if ((opt == 1 && !strcmp(p->name, query)) ||
             (opt == 2 && !strcmp(p->phone, query)) ||
-            (opt == 3 && !strcmp(p->email, query))) {
+            (opt == 3 && !strcmp(p->email, query)))
+        {
             matches[mcount++] = p;
         }
     }
@@ -477,7 +567,6 @@ void editcontact()
         return;
     }
 
-    // 2. Disambiguate if >1 match
     int choice = 0;
     if (mcount > 1) {
         printf("\nFound %d matching contacts:\n\n", mcount);
@@ -497,12 +586,11 @@ void editcontact()
             loginPage();
             return;
         }
-        choice--;  // zero-based
+        choice--;
     }
-    // If exactly one match, choice stays 0
-    Node *target = matches[ (mcount == 1) ? 0 : choice ];
 
-    // 3. Let user choose which field to update
+    Node *target = matches[(mcount == 1) ? 0 : choice];
+
     printf("\nEditing contact: %s, %s, %s\n\n", 
            target->name, target->phone, target->email);
     printf("What would you like to update?\n");
@@ -523,7 +611,6 @@ void editcontact()
         return;
     }
 
-    // 4. Validate & apply
     bool valid = false;
     switch (field_opt) {
         case 1:
@@ -560,17 +647,50 @@ void editcontact()
     loginPage();
 }
 
-
-// Swap helper
-
-
-// Sorting
-// Comparison callbacks
+/**
+ * cmpName
+ * ------------------
+ * What: Comparison callback for merge-sort by name.
+ * Args:
+ *   Node *a, *b – two nodes to compare
+ * Returns:
+ *   int truth value (a ≤ b)
+ * Logic: strcmp(a->name, b->name) ≤ 0.
+ */
 static int cmpName(Node *a, Node *b)  { return strcmp(a->name,  b->name)  <= 0; }
+
+/**
+ * cmpPhone
+ * ------------------
+ * What: Comparison callback for merge-sort by phone.
+ * Args:
+ *   Node *a, *b
+ * Returns: int truth value (a ≤ b)
+ * Logic: strcmp(a->phone, b->phone) ≤ 0.
+ */
 static int cmpPhone(Node *a, Node *b) { return strcmp(a->phone, b->phone) <= 0; }
+
+/**
+ * cmpEmail
+ * ------------------
+ * What: Comparison callback for merge-sort by email.
+ * Args:
+ *   Node *a, *b
+ * Returns: int truth value (a ≤ b)
+ * Logic: strcmp(a->email, b->email) ≤ 0.
+ */
 static int cmpEmail(Node *a, Node *b) { return strcmp(a->email, b->email) <= 0; }
 
-// Split a list into front/back halves
+/**
+ * frontBackSplit
+ * ------------------
+ * What: Splits a linked list into two halves.
+ * Args:
+ *   Node *source – head of original list
+ *   Node **frontRef, **backRef – out parameters for two sublists
+ * Returns: void
+ * Logic: Uses fast/slow pointer to find midpoint, breaks link.
+ */
 static void frontBackSplit(Node *source, Node **frontRef, Node **backRef) {
     Node *slow = source, *fast = source->next;
     while (fast) {
@@ -585,7 +705,17 @@ static void frontBackSplit(Node *source, Node **frontRef, Node **backRef) {
     slow->next = NULL;
 }
 
-// Merge two sorted lists using cmp(a,b)==true if a ≤ b
+/**
+ * sortedMerge
+ * ------------------
+ * What: Merges two sorted lists using cmp callback.
+ * Args:
+ *   Node *a, *b – heads of two sorted lists
+ *   int (*cmp)(Node*,Node*) – comparison function
+ * Returns:
+ *   Node* – head of merged sorted list
+ * Logic: Recursively picks the smaller head based on cmp.
+ */
 static Node *sortedMerge(Node *a, Node *b, int (*cmp)(Node*,Node*)) {
     if (!a) return b;
     if (!b) return a;
@@ -598,7 +728,17 @@ static Node *sortedMerge(Node *a, Node *b, int (*cmp)(Node*,Node*)) {
     }
 }
 
-// Merge‐sort entry point
+/**
+ * mergeSort
+ * ------------------
+ * What: Recursively sorts a linked list via merge sort.
+ * Args:
+ *   Node *h – head of list to sort
+ *   int (*cmp)(Node*,Node*) – comparison function
+ * Returns:
+ *   Node* – head of sorted list
+ * Logic: Base case single/empty; split list; sort halves; merge.
+ */
 static Node *mergeSort(Node *h, int (*cmp)(Node*,Node*)) {
     if (!h || !h->next) return h;
     Node *a, *b;
@@ -608,27 +748,56 @@ static Node *mergeSort(Node *h, int (*cmp)(Node*,Node*)) {
     return sortedMerge(a, b, cmp);
 }
 
-// Now replace your three sortByX() with:
-
+/**
+ * sortByName
+ * ------------------
+ * What: Sorts full list by name (ascending).
+ * Args: none
+ * Returns: void
+ * Logic: Calls mergeSort with cmpName, then displaycontacts().
+ */
 void sortByName() {
     head = mergeSort(head, cmpName);
     displaycontacts();
 }
 
+/**
+ * sortByNumber
+ * ------------------
+ * What: Sorts full list by phone number (ascending).
+ * Args: none
+ * Returns: void
+ * Logic: Calls mergeSort with cmpPhone, then displaycontacts().
+ */
 void sortByNumber() {
     head = mergeSort(head, cmpPhone);
     displaycontacts();
 }
 
+/**
+ * sortByEmail
+ * ------------------
+ * What: Sorts full list by email (ascending).
+ * Args: none
+ * Returns: void
+ * Logic: Calls mergeSort with cmpEmail, then displaycontacts().
+ */
 void sortByEmail() {
     head = mergeSort(head, cmpEmail);
     displaycontacts();
 }
 
-
+/**
+ * displaySortedContacts
+ * ------------------
+ * What: Presents a submenu to choose sort field and then sorts.
+ * Args: none
+ * Returns: void
+ * Logic: Reads choice, calls corresponding sortByX().
+ */
 void displaySortedContacts()
 {
-       clearBuffer();
+    clearBuffer();
     printf("\t\t|---------------------------------------------------------------|\n");
     printf("\t\t\t     >>> Display sorted Contacts <<<\n");
     printf("\t\t|---------------------------------------------------------------|\n\n");
@@ -640,21 +809,25 @@ void displaySortedContacts()
     int ch;
     scanf("%d", &ch);
     clearInputBuffer();
-    if (ch == 1)
-        sortByName();
-    else if (ch == 2)
-        sortByNumber();
-    else if (ch == 3)
-        sortByEmail();
-    else
-    {
+    if (ch == 1)      sortByName();
+    else if (ch == 2) sortByNumber();
+    else if (ch == 3) sortByEmail();
+    else {
         printf("Invalid choice!\n");
         my_pause();
         displaySortedContacts();
     }
 }
 
-// Save to CSV
+/**
+ * save
+ * ------------------
+ * What: Saves all contacts back to "contacts.csv".
+ * Args: none
+ * Returns: void
+ * Logic: Opens CSV for write, iterates list printing each record, closes file,
+ *        then asks user whether to exit or return to menu.
+ */
 void save()
 {
     pF = fopen("contacts.csv", "w");
@@ -667,6 +840,7 @@ void save()
     for (Node *p = head; p; p = p->next)
         fprintf(pF, "%s,%s,%s\n", p->name, p->phone, p->email);
     fclose(pF);
+
     clearBuffer();
     printf("\nContacts saved successfully!\n");
     printf("Enter 0 to go back or y to EXIT - ");
@@ -674,14 +848,19 @@ void save()
     scanf(" %c", &c);
     clearInputBuffer();
     if (c == 'y' || c == 'Y')
-    {
         endScreen();
-    }
     else
         loginPage();
 }
 
-// Exit
+/**
+ * Exit
+ * ------------------
+ * What: Prompts to save before quitting, then exits.
+ * Args: none
+ * Returns: void
+ * Logic: Asks Y/N; if yes calls save(), else calls endScreen().
+ */
 void Exit()
 {
     clearBuffer();
@@ -696,14 +875,24 @@ void Exit()
 }
 
 
-// Validations
+/**
+ * isvalidname
+ * ------------------
+ * What: Validates that name contains only letters and spaces.
+ * Args:
+ *   const char name[] – input string
+ * Returns:
+ *   int – 1 if valid, 0 otherwise
+ * Logic: Iterates each char; if non-letter/non-space found, returns 0.
+ */
 int isvalidname(const char name[])
 {
-
     int x = 0;
     for (int i = 0; name[i] != '\0'; i++)
     {
-        if ((name[i] >= 'a' && name[i] <= 'z') || (name[i] >= 'A' && name[i] <= 'Z') || (name[i] == ' '))
+        if ((name[i] >= 'a' && name[i] <= 'z') ||
+            (name[i] >= 'A' && name[i] <= 'Z') ||
+            (name[i] == ' '))
         {
             x = 1;
         }
@@ -716,50 +905,76 @@ int isvalidname(const char name[])
     return x;
 }
 
+/**
+ * isvalidnumber
+ * ------------------
+ * What: Validates that phone is exactly 10 digits.
+ * Args:
+ *   const char number[] – input string
+ * Returns:
+ *   int – 2 if valid, 0 otherwise
+ * Logic: Checks strlen == 10, then each char is digit.
+ */
 int isvalidnumber(const char number[])
 {
     int length = strlen(number);
-
     if (length != 10)
-    {
-        return 0; // Not 10 digits
-    }
-
+        return 0;
     for (int i = 0; i < length; i++)
-    {
         if (number[i] < '0' || number[i] > '9')
-        {
-            return 0; // Non-digit found
-        }
-    }
-
-    return 2; // All digits and length is 10
+            return 0;
+    return 2;
 }
 
+/**
+ * isvalidemail
+ * ------------------
+ * What: Validates basic email format ending in ".com".
+ * Args:
+ *   const char email[] – input string
+ * Returns:
+ *   int – >=1 for partial, 2 for full (has @ and ends in .com), 0 if invalid
+ * Logic: Counts '@' and '.', ensures one of each, checks ".com" suffix.
+ */
 int isvalidemail(const char email[])
 {
-    int x = 0;
-    int spl=0;
+    int x = 0, spl = 0;
     for (int i = 0; email[i] != '\0'; i++)
     {
-        if (email[i] == '@' && email[i + 1] != '\0' && email[i + 1] != '.' && i != 0 && email[i - 1] != '.')
+        if (email[i] == '@' &&
+            email[i+1] != '\0' &&
+            email[i+1] != '.' &&
+            i != 0 &&
+            email[i-1] != '.')
         {
             x = 1;
         }
-        if(email[i]=='@' || email[i]=='.'){
+        if (email[i] == '@' || email[i] == '.')
             spl++;
-        }
-        if (email[i] == '.' && email[i + 1] == 'c' && email[i + 2] == 'o' && email[i + 3] == 'm' && email[i + 4] == '\0')
+        if (email[i] == '.' &&
+            email[i+1] == 'c' &&
+            email[i+2] == 'o' &&
+            email[i+3] == 'm' &&
+            email[i+4] == '\0')
         {
             x = 2;
         }
     }
-    if( spl != 2){
-        x=1;
-    }
-
+    if (spl != 2)
+        x = 1;
     return x;
 }
+
+/**
+ * checkname
+ * ------------------
+ * What: Checks if a name already exists in the list.
+ * Args:
+ *   const char *s – name to search
+ * Returns:
+ *   int – 1 if found, 0 otherwise
+ * Logic: Iterates list and strcmp() to each node’s name.
+ */
 int checkname(const char *s)
 {
     for (Node *p = head; p; p = p->next)
@@ -767,6 +982,17 @@ int checkname(const char *s)
             return 1;
     return 0;
 }
+
+/**
+ * checkphone
+ * ------------------
+ * What: Checks if a phone number already exists.
+ * Args:
+ *   const char *s – phone to search
+ * Returns:
+ *   int – 1 if found, 0 otherwise
+ * Logic: Iterates list and strcmp() to each node’s phone.
+ */
 int checkphone(const char *s)
 {
     for (Node *p = head; p; p = p->next)
@@ -774,6 +1000,17 @@ int checkphone(const char *s)
             return 1;
     return 0;
 }
+
+/**
+ * checkemail
+ * ------------------
+ * What: Checks if an email already exists.
+ * Args:
+ *   const char *s – email to search
+ * Returns:
+ *   int – 1 if found, 0 otherwise
+ * Logic: Iterates list and strcmp() to each node’s email.
+ */
 int checkemail(const char *s)
 {
     for (Node *p = head; p; p = p->next)

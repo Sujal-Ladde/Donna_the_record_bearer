@@ -1,23 +1,43 @@
 #include "contact.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct Record
 {
     char name[50];
     char phone[50];
     char email[50];
 } Details;
-Details *contacts;
 
+Details *contacts;
 int count = 0;
 int x = 0;
 int choice;
-
 FILE *pF = NULL;
 
+/**
+ * clearBuffer
+ * ------------------
+ * What: Clears the terminal screen and flushes stdin.
+ * Args: none
+ * Returns: void
+ * Logic: Calls system("clear") then fflush(stdin) to drop any unread input.
+ */
 void clearBuffer()
 {
     system("clear"); // clears the output screen
-    fflush(stdin); // clears the input buffers like '\n'
+    fflush(stdin);   // clears the input buffers like '\n'
 }
+
+/**
+ * clearInputBuffer
+ * ------------------
+ * What: Drains leftover characters from stdin until newline or EOF.
+ * Args: none
+ * Returns: void
+ * Logic: Loops getchar() until '\n' or EOF.
+ */
 void clearInputBuffer()
 {
     int c;
@@ -25,10 +45,28 @@ void clearInputBuffer()
     {
     }
 }
+
+/**
+ * my_pause
+ * ------------------
+ * What: Pauses execution until the user presses a key.
+ * Args: none
+ * Returns: void
+ * Logic: Prints a prompt then calls getchar().
+ */
 void my_pause(){
     printf("Press any key to continue...\n");
     getchar();
 }
+
+/**
+ * loginPage
+ * ------------------
+ * What: Displays the main menu and dispatches to the chosen action.
+ * Args: none
+ * Returns: void
+ * Logic: Prints menu options, reads global 'choice', then calls matching handler.
+ */
 void loginPage()
 {
     clearBuffer();
@@ -48,6 +86,7 @@ void loginPage()
     printf("\t\t\t\t   ------------------------------------ \n\n");
     printf("\t\t\t\tEnter the number & Hit ENTER: ");
     scanf("%d", &choice);
+    clearInputBuffer();
 
     switch (choice)
     {
@@ -86,6 +125,15 @@ void loginPage()
         loginPage();
     }
 }
+
+/**
+ * infoscreen
+ * ------------------
+ * What: Shows the introduction banner for the app.
+ * Args: none
+ * Returns: void
+ * Logic: Prints description text, pauses, then calls loginPage().
+ */
 void infoscreen()
 {
     clearBuffer();
@@ -98,6 +146,15 @@ void infoscreen()
     my_pause();
     loginPage();
 }
+
+/**
+ * endScreen
+ * ------------------
+ * What: Displays the closing banner and exits the program.
+ * Args: none
+ * Returns: void (exits)
+ * Logic: Prints credits then calls exit(0).
+ */
 void endScreen()
 {
     clearBuffer();
@@ -110,17 +167,27 @@ void endScreen()
     printf("\t\t\t\t------------------------------------------ \n");
     printf("\t\t\t\t\t\tThank You. \n");
     printf("\t\t\t\t------------------------------------------ \n\n");
-    // Sleep(1500);  // pause the screen for 3 seconds
-    exit(0); // ends the program safely
+    exit(0);
 }
 
+/**
+ * isvalidname
+ * ------------------
+ * What: Validates that a name contains only letters and spaces.
+ * Args:
+ *   char name[] – the input string
+ * Returns:
+ *   int – 1 if valid, 0 otherwise
+ * Logic: Loops through 'name', rejects on first non-letter, non-space.
+ */
 int isvalidname(char name[])
 {
-
     int x = 0;
     for (int i = 0; name[i] != '\0'; i++)
     {
-        if ((name[i] >= 'a' && name[i] <= 'z') || (name[i] >= 'A' && name[i] <= 'Z') || (name[i] == ' '))
+        if ((name[i] >= 'a' && name[i] <= 'z') ||
+            (name[i] >= 'A' && name[i] <= 'Z') ||
+            (name[i] == ' '))
         {
             x = 1;
         }
@@ -133,6 +200,16 @@ int isvalidname(char name[])
     return x;
 }
 
+/**
+ * isvalidnumber
+ * ------------------
+ * What: Validates that phone number is exactly 10 digits.
+ * Args:
+ *   char number[] – input phone string
+ * Returns:
+ *   int – 2 if valid, 0 otherwise
+ * Logic: Checks length == 10, then each char is digit.
+ */
 int isvalidnumber(char number[])
 {
     int length = strlen(number);
@@ -153,17 +230,28 @@ int isvalidnumber(char number[])
     return 2; // All digits and length is 10
 }
 
+/**
+ * isvalidemail
+ * ------------------
+ * What: Validates basic email format ending in ".com".
+ * Args:
+ *   char email[] – input email string
+ * Returns:
+ *   int – 2 if fully valid, 1 if partial, 0 if invalid
+ * Logic: Scans for '@' and '.', counts punctuation, checks ".com" suffix.
+ */
 int isvalidemail(char email[])
 {
     int x = 0;
-    int spl=0;
+    int spl = 0;
     for (int i = 0; email[i] != '\0'; i++)
     {
         if (email[i] == '@' && email[i + 1] != '\0' && email[i + 1] != '.' && i != 0 && email[i - 1] != '.')
         {
             x = 1;
         }
-        if(email[i]=='@' || email[i]=='.'){
+        if (email[i] == '@' || email[i] == '.')
+        {
             spl++;
         }
         if (email[i] == '.' && email[i + 1] == 'c' && email[i + 2] == 'o' && email[i + 3] == 'm' && email[i + 4] == '\0')
@@ -171,12 +259,22 @@ int isvalidemail(char email[])
             x = 2;
         }
     }
-    if( spl != 2){
-        x=1;
+    if (spl != 2)
+    {
+        x = 1;
     }
 
     return x;
 }
+
+/**
+ * addcontact
+ * ------------------
+ * What: Adds one or more new contacts to the dynamic array.
+ * Args: none
+ * Returns: void
+ * Logic: Reallocates if needed, loops per new contact, validates and appends.
+ */
 void addcontact()
 {
     clearBuffer();
@@ -215,13 +313,11 @@ void addcontact()
         data[strcspn(data, "\n")] = 0;
         if (checkname(data) == 0)
         {
-
             if (isvalidname(data))
             {
                 strncpy(contacts[count].name, data, sizeof(contacts[count].name) - 1);
                 contacts[count].name[sizeof(contacts[count].name) - 1] = '\0';
             }
-
             else
             {
                 printf("\n\t\tInvalid Name! Please enter a valid name.\n");
@@ -286,20 +382,27 @@ void addcontact()
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t| \tName\t| \tPhone Number\t  |  \t Email\t\t| \n");
     printf("\t\t|---------------------------------------------------------------| \n");
-    int x = count - no_of_contacts;
+    int start = count - no_of_contacts;
     for (int i = 0; i < no_of_contacts; i++)
     {
-
-        printf("\t\t| %s \t| %s \t| %s \t|", contacts[x].name, contacts[x].phone, contacts[x].email);
-        printf("\n");
-        x++;
+        printf("\t\t| %s \t| %s \t| %s \t|\n",
+               contacts[start + i].name,
+               contacts[start + i].phone,
+               contacts[start + i].email);
     }
 
     my_pause();
     loginPage();
 }
 
-
+/**
+ * displaycontacts
+ * ------------------
+ * What: Displays all stored contacts in a tabular format.
+ * Args: none
+ * Returns: void
+ * Logic: Iterates the contacts[] array up to 'count' and prints each entry.
+ */
 void displaycontacts()
 {
     clearBuffer();
@@ -308,23 +411,29 @@ void displaycontacts()
     printf("\t\t\t\t\t----------------------------- \n");
     printf("\t\t\t\t\t    Total Contacts = %d\n", count);
     printf("\t\t|-------------------------------------------------------------------------| \n");
-    printf("\t\t| %-20s | %-15s | %-30s | \n", "Name", "Phone Number", "Email"); // Adjust widths
-    printf("\t\t|-------------------------------------------------------------------------| \n");
-    printf("\n");
+    printf("\t\t| %-20s | %-15s | %-30s | \n", "Name", "Phone Number", "Email");
+    printf("\t\t|-------------------------------------------------------------------------| \n\n");
 
     for (int i = 0; i < count; i++)
     {
-        printf("\t\t| %-20s | %-15s | %-30s  \n", contacts[i].name, contacts[i].phone, contacts[i].email); // Adjust widths
+        printf("\t\t| %-20s | %-15s | %-30s  \n",
+               contacts[i].name,
+               contacts[i].phone,
+               contacts[i].email);
     }
     getchar();
     my_pause();
-    // my_pause();
-
     loginPage();
 }
 
-// ... (Rest of your code)
-
+/**
+ * searchByName
+ * ------------------
+ * What: Finds and displays contacts whose name contains the query substring.
+ * Args: none
+ * Returns: void
+ * Logic: Prompts for substring, loops through contacts[], uses strstr() for match.
+ */
 void searchByName()
 {
     clearBuffer();
@@ -350,18 +459,25 @@ void searchByName()
     {
         if (strstr(contacts[i].name, searchName))
         {
-            printf("\t\t| %s \t| %s \t| %s \t|", contacts[i].name, contacts[i].phone, contacts[i].email);
-            printf("\n");
+            printf("\t\t| %-20s | %-15s | %-30s |\n",
+                   contacts[i].name,
+                   contacts[i].phone,
+                   contacts[i].email);
         }
     }
 
     my_pause();
     searchcontact();
-
-    printf("\n\n\t\tContact not found!");
-    my_pause();
-    searchcontact();
 }
+
+/**
+ * searchByNumber
+ * ------------------
+ * What: Finds and displays contacts whose phone contains the query substring.
+ * Args: none
+ * Returns: void
+ * Logic: Prompts for substring, loops through contacts[], uses strstr().
+ */
 void searchByNumber()
 {
     clearBuffer();
@@ -370,6 +486,7 @@ void searchByNumber()
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\n\t\t\t   (Enter 0 to go back to the main menu)\n\n");
     char searchphone[50];
+
     printf("\t\tEnter the number to search - ");
     fgets(searchphone, sizeof(searchphone), stdin);
     searchphone[strcspn(searchphone, "\n")] = 0;
@@ -386,8 +503,10 @@ void searchByNumber()
     {
         if (strstr(contacts[i].phone, searchphone))
         {
-            printf("\t\t| %s \t| %s \t| %s \t|", contacts[i].name, contacts[i].phone, contacts[i].email);
-            printf("\n");
+            printf("\t\t| %-20s | %-15s | %-30s |\n",
+                   contacts[i].name,
+                   contacts[i].phone,
+                   contacts[i].email);
         }
     }
 
@@ -395,6 +514,14 @@ void searchByNumber()
     searchcontact();
 }
 
+/**
+ * searchByEmail
+ * ------------------
+ * What: Finds and displays contacts whose email contains the query substring.
+ * Args: none
+ * Returns: void
+ * Logic: Prompts for substring, loops through contacts[], uses strstr().
+ */
 void searchByEmail()
 {
     clearBuffer();
@@ -403,6 +530,7 @@ void searchByEmail()
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\n\t\t\t   (Enter 0 to go back to the main menu)\n\n");
     char searchemail[50];
+
     printf("\t\tEnter the Email to search - ");
     fgets(searchemail, sizeof(searchemail), stdin);
     searchemail[strcspn(searchemail, "\n")] = 0;
@@ -419,8 +547,10 @@ void searchByEmail()
     {
         if (strstr(contacts[i].email, searchemail))
         {
-            printf("\t\t| %s \t| %s \t| %s \t|", contacts[i].name, contacts[i].phone, contacts[i].email);
-            printf("\n");
+            printf("\t\t| %-20s | %-15s | %-30s |\n",
+                   contacts[i].name,
+                   contacts[i].phone,
+                   contacts[i].email);
         }
     }
 
@@ -428,6 +558,14 @@ void searchByEmail()
     searchcontact();
 }
 
+/**
+ * searchcontact
+ * ------------------
+ * What: Menu to choose search by name, phone, or email.
+ * Args: none
+ * Returns: void
+ * Logic: Reads sub-choice then calls the corresponding searchByX().
+ */
 void searchcontact()
 {
     clearBuffer();
@@ -441,19 +579,21 @@ void searchcontact()
     printf("\n\t\t\t3. Search by Email");
     printf("\n\n\t\tEnter the search parameter - ");
     scanf("%d", &searchchoice);
+    clearInputBuffer();
+
     if (searchchoice == 0)
     {
         loginPage();
     }
     switch (searchchoice)
     {
-    case (1):
+    case 1:
         searchByName();
         break;
-    case (2):
+    case 2:
         searchByNumber();
         break;
-    case (3):
+    case 3:
         searchByEmail();
         break;
     default:
@@ -463,9 +603,16 @@ void searchcontact()
     loginPage();
 }
 
+/**
+ * deletecontact
+ * ------------------
+ * What: Deletes the first contact that exactly matches a given name.
+ * Args: none
+ * Returns: void
+ * Logic: Prompts for a name, validates it, shifts array elements down to overwrite.
+ */
 void deletecontact()
 {
-
     clearBuffer();
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t\t\t     >>> Delete a Contact <<< \n");
@@ -483,24 +630,25 @@ jump3:
     }
     if (isvalidname(searchname))
     {
-
         for (int i = 0; i < count; i++)
         {
             if (strcmp(contacts[i].name, searchname) == 0)
             {
-                printf("\n\t\t| %s \t| %s \t| %s \t|", contacts[i].name, contacts[i].phone, contacts[i].email);
+                printf("\n\t\t| %-20s | %-15s | %-30s |\n",
+                       contacts[i].name,
+                       contacts[i].phone,
+                       contacts[i].email);
                 for (int j = i; j < count - 1; j++)
                 {
                     contacts[j] = contacts[j + 1];
                 }
-                printf("\n\n\t\tContact Deleted Successfully!\n");
                 count--;
+                printf("\n\n\t\tContact Deleted Successfully!\n");
                 my_pause();
                 loginPage();
                 return;
             }
         }
-
         printf("Contact not found!");
     }
     else
@@ -512,32 +660,44 @@ jump3:
     loginPage();
 }
 
+/**
+ * Deleteall
+ * ------------------
+ * What: Deletes all contacts after confirmation.
+ * Args: none
+ * Returns: void
+ * Logic: Prompts Y/N; if yes sets count=0, else does nothing.
+ */
 void Deleteall()
 {
-
     clearBuffer();
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\t\t\t\t   >>> DELETE ALL CONTACTS!! <<< \n");
     printf("\t\t|---------------------------------------------------------------| \n");
     printf("\n\n\t\tAre you sure you want to delete all contacts? (Y/N) - ");
-    char choice;
-    scanf("%c", &choice);
+    char choice = getchar();
+    clearInputBuffer();
     if (choice == 'Y' || choice == 'y')
     {
         count = 0;
         printf("\n\n\t\t\t\tAll contacts deleted successfully!\n\t\t\t\t");
-        my_pause();
-        loginPage();
     }
     else
     {
         printf("\n\n\t\t\t\tOperation Cancelled!\n\t\t\t");
-        my_pause();
-
-        loginPage();
     }
+    my_pause();
+    loginPage();
 }
 
+/**
+ * editcontact
+ * ------------------
+ * What: Finds and updates a contact field (name/phone/email).
+ * Args: none
+ * Returns: void
+ * Logic: Menu to choose field, prompts for old value, validates, replaces with new.
+ */
 void editcontact()
 {
     clearBuffer();
@@ -551,13 +711,14 @@ void editcontact()
     char newname[50];
     char newphone[50];
     char newemail[50];
+    int flag, choice;
+
 jump_here:
     printf("\n\t\t\t   (Enter 0 to go back to the main menu)\n");
     printf("\n\n\t\twhat do you want to edit?\n");
     printf("\t\t1. Name\n");
     printf("\t\t2. Phone Number\n");
     printf("\t\t3. Email\n");
-    int choice;
     printf("\n\t\tEnter your choice - ");
     scanf("%d", &choice);
     getchar();
@@ -565,11 +726,11 @@ jump_here:
     {
         loginPage();
     }
-    int flag = 0;
+
+    flag = 0;
     switch (choice)
     {
-    case (1):
-
+    case 1:
     jump4:
         printf("\n\n\tEnter the name to edit - ");
         fgets(searchname, sizeof(searchname), stdin);
@@ -580,34 +741,36 @@ jump_here:
         }
         if (isvalidname(searchname))
         {
-
             for (int i = 0; i < count; i++)
             {
                 if (strcmp(contacts[i].name, searchname) == 0)
                 {
-                    printf("\t\tFound the contact!");
+                    printf("\t\tFound the contact!\n");
                     flag = 1;
                 }
             }
-            if (flag == 0)
+            if (!flag)
             {
-                printf("\n\t\tContact not found!");
+                printf("\n\t\tContact not found!\n");
                 goto jump_here;
             }
             printf("\n\n\tEnter the new name - ");
             fgets(newname, sizeof(newname), stdin);
+            newname[strcspn(newname, "\n")] = 0;
             if (strcmp(newname, "0") == 0)
             {
                 loginPage();
             }
-            newname[strcspn(newname, "\n")] = 0;
             for (int i = 0; i < count; i++)
             {
                 if (strcmp(contacts[i].name, searchname) == 0)
                 {
                     strcpy(contacts[i].name, newname);
-                    printf("\n\tName updated successfully!");
-                    printf("\n\t\t| %s \t| %s \t| %s \t|\n", contacts[i].name, contacts[i].phone, contacts[i].email);
+                    printf("\n\tName updated successfully!\n");
+                    printf("\t\t| %-20s | %-15s | %-30s |\n",
+                           contacts[i].name,
+                           contacts[i].phone,
+                           contacts[i].email);
                     my_pause();
                     loginPage();
                 }
@@ -618,10 +781,9 @@ jump_here:
             printf("\n\t\tInvalid Name! Please enter a valid name.\n");
             goto jump4;
         }
-        my_pause();
-        loginPage();
         break;
-    case (2):
+
+    case 2:
     jump7:
         printf("\n\n\tEnter the phone number to edit - ");
         fgets(searchphone, sizeof(searchphone), stdin);
@@ -634,17 +796,16 @@ jump_here:
         {
             for (int i = 0; i < count; i++)
             {
-                if (strcmp(contacts[i].name, searchname) == 0)
+                if (strcmp(contacts[i].phone, searchphone) == 0)
                 {
-                    printf("\t\tFound the contact!");
+                    printf("\t\tFound the contact!\n");
                     flag = 1;
                 }
             }
-            if (flag == 0)
+            if (!flag)
             {
-                printf("\n\t\tContact not found!");
+                printf("\n\t\tContact not found!\n");
             }
-
             printf("\n\n\tEnter the new phone number - ");
             fgets(newphone, sizeof(newphone), stdin);
             newphone[strcspn(newphone, "\n")] = 0;
@@ -652,7 +813,6 @@ jump_here:
             {
                 loginPage();
             }
-
             if (isvalidnumber(newphone) == 2)
             {
                 for (int i = 0; i < count; i++)
@@ -660,8 +820,11 @@ jump_here:
                     if (strcmp(contacts[i].phone, searchphone) == 0)
                     {
                         strcpy(contacts[i].phone, newphone);
-                        printf("\n\tPhone number updated successfully!");
-                        printf("\n\t\t| %s \t| %s \t| %s \t|\n", contacts[i].name, contacts[i].phone, contacts[i].email);
+                        printf("\n\tPhone number updated successfully!\n");
+                        printf("\t\t| %-20s | %-15s | %-30s |\n",
+                               contacts[i].name,
+                               contacts[i].phone,
+                               contacts[i].email);
                         my_pause();
                         loginPage();
                     }
@@ -673,14 +836,13 @@ jump_here:
             printf("\n\t\tInvalid Phone Number! Please enter a valid phone number.\n");
             goto jump7;
         }
-        my_pause();
-        loginPage();
         break;
-    case (3):
+
+    case 3:
     jump10:
         printf("\n\n\tEnter the email to edit - ");
         fgets(searchemail, sizeof(searchemail), stdin);
-        searchemail[strcspn(searchemail, " \n")] = 0;
+        searchemail[strcspn(searchemail, "\n")] = 0;
         if (strcmp(searchemail, "0") == 0)
         {
             loginPage();
@@ -691,16 +853,15 @@ jump_here:
             {
                 if (strcmp(contacts[i].email, searchemail) == 0)
                 {
-                    printf("\t\tFound the contact!");
+                    printf("\t\tFound the contact!\n");
                     flag = 1;
                 }
             }
-            if (flag == 0)
+            if (!flag)
             {
-                printf("\n\t\tContact not found!");
+                printf("\n\t\tContact not found!\n");
                 goto jump_here;
             }
-
         jump11:
             printf("\n\n\tEnter the new email - ");
             fgets(newemail, sizeof(newemail), stdin);
@@ -716,8 +877,13 @@ jump_here:
                     if (strcmp(contacts[i].email, searchemail) == 0)
                     {
                         strcpy(contacts[i].email, newemail);
-                        printf("\n\\tEmail updated successfully!");
-                        printf("\n\t\t| %s \t| %s \t| %s \t|\n", contacts[i].name, contacts[i].phone, contacts[i].email);
+                        printf("\n\tEmail updated successfully!\n");
+                        printf("\t\t| %-20s | %-15s | %-30s |\n",
+                               contacts[i].name,
+                               contacts[i].phone,
+                               contacts[i].email);
+                        my_pause();
+                        loginPage();
                     }
                 }
             }
@@ -732,16 +898,23 @@ jump_here:
             printf("\n\t\tInvalid Email! Please enter a valid email.\n");
             goto jump10;
         }
-
-        my_pause();
-        loginPage();
         break;
+
     default:
         printf("\n\n\tInvalid choice!\n");
         my_pause();
         loginPage();
     }
 }
+
+/**
+ * sortByName
+ * ------------------
+ * What: Sorts contacts[] by name using bubble sort.
+ * Args: none
+ * Returns: void
+ * Logic: Nested loops swapping adjacent out-of-order entries.
+ */
 void sortByName()
 {
     Details temp;
@@ -753,7 +926,6 @@ void sortByName()
             {
                 temp = contacts[j];
                 contacts[j] = contacts[j + 1];
-                ;
                 contacts[j + 1] = temp;
             }
         }
@@ -761,6 +933,14 @@ void sortByName()
     displaycontacts();
 }
 
+/**
+ * sortByNumber
+ * ------------------
+ * What: Sorts contacts[] by phone number using bubble sort.
+ * Args: none
+ * Returns: void
+ * Logic: Nested loops swapping adjacent out-of-order entries.
+ */
 void sortByNumber()
 {
     Details temp;
@@ -779,6 +959,14 @@ void sortByNumber()
     displaycontacts();
 }
 
+/**
+ * sortByEmail
+ * ------------------
+ * What: Sorts contacts[] by email using bubble sort.
+ * Args: none
+ * Returns: void
+ * Logic: Nested loops swapping adjacent out-of-order entries.
+ */
 void sortByEmail()
 {
     Details temp;
@@ -797,6 +985,14 @@ void sortByEmail()
     displaycontacts();
 }
 
+/**
+ * displaySortedContacts
+ * ------------------
+ * What: Shows sort menu then calls the chosen sort function.
+ * Args: none
+ * Returns: void
+ * Logic: Reads choice and dispatches to sortByName/Number/Email.
+ */
 void displaySortedContacts()
 {
     clearBuffer();
@@ -807,19 +1003,18 @@ void displaySortedContacts()
     printf("1. Sort by Name\n");
     printf("2. Sort by Phone Number\n");
     printf("3. Sort by Email\n");
-    int choice;
     printf("\n\tEnter your choice - ");
     scanf("%d", &choice);
     getchar();
     switch (choice)
     {
-    case (1):
+    case 1:
         sortByName();
         break;
-    case (2):
+    case 2:
         sortByNumber();
         break;
-    case (3):
+    case 3:
         sortByEmail();
         break;
     default:
@@ -829,47 +1024,80 @@ void displaySortedContacts()
     loginPage();
 }
 
+/**
+ * checkemail
+ * ------------------
+ * What: Checks if the given email already exists.
+ * Args:
+ *   char email[] – the email to check
+ * Returns:
+ *   int – 1 if found, 0 otherwise
+ * Logic: Linear scan of contacts[] comparing strings.
+ */
 int checkemail(char email[])
 {
-    int x = 0;
     for (int i = 0; i < count; i++)
     {
         if (strcmp(contacts[i].email, email) == 0)
         {
-            x = 1;
-            break;
+            return 1;
         }
     }
-    return x;
+    return 0;
 }
 
+/**
+ * checkphone
+ * ------------------
+ * What: Checks if the given phone number already exists.
+ * Args:
+ *   char phone[] – the phone to check
+ * Returns:
+ *   int – 1 if found, 0 otherwise
+ * Logic: Linear scan of contacts[] comparing strings.
+ */
 int checkphone(char phone[])
 {
-    int x = 0;
     for (int i = 0; i < count; i++)
     {
         if (strcmp(contacts[i].phone, phone) == 0)
         {
-            x = 1;
-            break;
+            return 1;
         }
     }
-    return x;
+    return 0;
 }
+
+/**
+ * checkname
+ * ------------------
+ * What: Checks if the given name already exists.
+ * Args:
+ *   char name[] – the name to check
+ * Returns:
+ *   int – 1 if found, 0 otherwise
+ * Logic: Linear scan of contacts[] comparing strings.
+ */
 int checkname(char name[])
 {
-    int x = 0;
     for (int i = 0; i < count; i++)
     {
         if (strcmp(contacts[i].name, name) == 0)
         {
-            x = 1;
-            break;
+            return 1;
         }
     }
-    return x;
+    return 0;
 }
 
+/**
+ * initialize
+ * ------------------
+ * What: Loads contacts from "contacts.csv" into memory.
+ * Args: none
+ * Returns: void
+ * Logic: Counts lines, mallocs 2*x entries, then fscanf() each record.
+ */
 void initialize()
 {
     pF = fopen("contacts.csv", "r");
@@ -881,62 +1109,66 @@ void initialize()
             x++;
         }
     }
-    printf("x=%d", x);
     rewind(pF);
 
     contacts = (Details *)malloc(2 * x * sizeof(Details));
     fclose(pF);
 
-    // addgiven();
     pF = fopen("contacts.csv", "r");
-
-   
     for (int i = 0; i < x; i++)
     {
+        fscanf(pF, "%49[^,],%14[^,],%49[^\n]\n",
+               contacts[i].name,
+               contacts[i].phone,
+               contacts[i].email);
         count++;
-
-        fscanf(pF, "%49[^,],%14[^,],%49[^\n]\n", contacts[i].name, contacts[i].phone, contacts[i].email);
     }
-    printf("COUNT=%d", count);
-    printf("x=%d", x);
-
     fclose(pF);
 
     infoscreen();
 }
+
+/**
+ * save
+ * ------------------
+ * What: Writes all contacts back to "contacts.csv".
+ * Args: none
+ * Returns: void
+ * Logic: Opens file for write, fprintf() each record, then prompts to exit/menu.
+ */
 void save()
 {
-    pF = fopen("contacts.csv", "w"); // Open inside the function
-
+    pF = fopen("contacts.csv", "w");
     if (pF == NULL)
     {
         perror("Error opening file");
-        return; // Exit if error
+        return;
     }
-
 
     for (int i = 0; i < count; i++)
     {
-        if (fprintf(pF, "%s,%s,%s\n", contacts[i].name, contacts[i].phone, contacts[i].email) < 0)
+        if (fprintf(pF, "%s,%s,%s\n",
+                    contacts[i].name,
+                    contacts[i].phone,
+                    contacts[i].email) < 0)
         {
             perror("Error writing to file");
             fclose(pF);
-            return; // Exit if error
+            return;
         }
     }
-
     fclose(pF);
-    // free(contacts);
+
     clearBuffer();
     printf("\n\n\t\t\t\t\tContacts saved successfully!\n");
     char ch;
-    printf("\n\t\t\t\tEnter 0 to go back to the main menu or y to EXIT - ");
+    printf("\n\t\t\t\tEnter 0 to go back or y to EXIT - ");
     scanf(" %c", &ch);
     if (ch == '0')
     {
         loginPage();
     }
-    if (ch == 'Y' || ch == 'y')
+    else if (ch == 'Y' || ch == 'y')
     {
         endScreen();
         free(contacts);
@@ -947,6 +1179,14 @@ void save()
     }
 }
 
+/**
+ * Exit
+ * ------------------
+ * What: Prompts user to save before exiting.
+ * Args: none
+ * Returns: void
+ * Logic: Asks Y/N; on yes calls save(), else frees memory and exits.
+ */
 void Exit()
 {
     printf("\n\t\t\t\t(Enter 0 to go back to the main menu)\n");
@@ -957,12 +1197,11 @@ void Exit()
     {
         loginPage();
     }
-    if (ch == 'Y' || ch == 'y')
+    else if (ch == 'Y' || ch == 'y')
     {
         save();
-        printf("\n\n\t\t\t\t\t\t Contacts saved successfully!\n\t\t\t\t");
+        printf("\n\n\t\t\t\t\t Contacts saved successfully!\n\t\t\t\t");
         my_pause();
-        // Sleep(1500);
         endScreen();
     }
     else
@@ -971,45 +1210,47 @@ void Exit()
         endScreen();
     }
 }
+
+/**
+ * addgiven
+ * ------------------
+ * What: Writes a set of dummy contacts to "contacts.csv".
+ * Args: none
+ * Returns: void
+ * Logic: Opens file, prints header, then loops over hard-coded array.
+ */
 void addgiven()
 {
-
-    pF = fopen("contacts.csv", "w"); // Open inside the function
+    pF = fopen("contacts.csv", "w");
     if (pF == NULL)
     {
         perror("Error opening file");
-        return; // Exit if file open fails
-    }
-
-    Details dummyContacts[] = {
-        {"John Doe", "1234567890", "john@example.com"},
-        {"Alice Smith", "0987654321", "alice@example.com"},
-        {"Bob Johnson", "1112`````````223333", "bob@company.com"},
-        {"Carol White", "4445556666", "carol@company.com"},
-        {"David Brown", "7778889999", "david@example.com"},
-        {"Eve Davis", "6665554444", "eve@example.com"},
-        {"Frank Miller", "3334445555", "frank@example.com"},
-        {"Grace Wilson", "2223334444", "grace@example.com"},
-        {"Hannah Clark", "5556667777", "hannah@example.com"},
-        {"Ian Lewis", "8889990000", "ian@example.com"}};
-
-    if (fprintf(pF, "--------------------------------\n") < 0 ||
-        fprintf(pF, "Name\tPhone\tEmail\n") < 0 ||
-        fprintf(pF, "--------------------------------\n") < 0)
-    {
-        perror("Error writing header to file");
-        fclose(pF);
         return;
     }
 
+    Details dummyContacts[] = {
+        {"John Doe",    "1234567890", "john@example.com"},
+        {"Alice Smith", "0987654321", "alice@example.com"},
+        {"Bob Johnson", "1112223333", "bob@company.com"},
+        {"Carol White", "4445556666", "carol@company.com"},
+        {"David Brown", "7778889999", "david@example.com"},
+        {"Eve Davis",   "6665554444", "eve@example.com"},
+        {"Frank Miller","3334445555", "frank@example.com"},
+        {"Grace Wilson","2223334444", "grace@example.com"},
+        {"Hannah Clark","5556667777", "hannah@example.com"},
+        {"Ian Lewis",   "8889990000", "ian@example.com"}
+    };
+
+    fprintf(pF, "--------------------------------\n");
+    fprintf(pF, "Name\tPhone\tEmail\n");
+    fprintf(pF, "--------------------------------\n");
+
     for (int i = 0; i < 10; i++)
     {
-        if (fprintf(pF, "%s\t%s\t%s\n", dummyContacts[i].name, dummyContacts[i].phone, dummyContacts[i].email) < 0)
-        {
-            perror("Error writing contact to file");
-            fclose(pF);
-            return;
-        }
+        fprintf(pF, "%s\t%s\t%s\n",
+                dummyContacts[i].name,
+                dummyContacts[i].phone,
+                dummyContacts[i].email);
     }
 
     fclose(pF);
