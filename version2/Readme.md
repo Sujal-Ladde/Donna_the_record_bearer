@@ -60,12 +60,12 @@ An enhanced command-line address book application using a dynamic singly linked 
    git clone https://github.com/yourusername/address-book-donna.git
    cd address-book-donna/v2
    ```
-2. Build using the provided Makefile:
+2. Build with make:
 
    ```bash
+   make clean
    make
    ```
-
    This produces the `donna` executable.
 
 ---

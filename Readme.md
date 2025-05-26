@@ -90,7 +90,7 @@ Version‑specific sorting:
 
    ```bash
    make clean
-   make all
+   make
    ```
 
 ---
