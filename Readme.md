@@ -83,7 +83,7 @@ Version‑specific sorting:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Sujal-Ladde/Donna--the-Record-Bearer/tree/master
+   git clone https://github.com/Sujal-Ladde/Donna_the_record_bearer.git
    cd address-book-donna
    ```
 2. Build with make:
