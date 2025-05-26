@@ -65,6 +65,9 @@ A simple command-line address book application using a fixed-size array and bubb
    make clean
    make
    ```
+
+  produces the `donna` executable.
+
 ---
 
 ## Usage

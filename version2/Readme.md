@@ -57,7 +57,7 @@ An enhanced command-line address book application using a dynamic singly linked 
 1. Clone the repository and go to v2:
 
    ```bash
-   git clone https://github.com/yourusername/address-book-donna.git
+   git clone https://github.com/Sujal-Ladde/Donna_the_record_bearer/tree/main/version2
    cd address-book-donna/v2
    ```
 2. Build with make:

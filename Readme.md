@@ -92,6 +92,7 @@ Version‑specific sorting:
    make clean
    make
    ```
+   This produces the `donna` executable.
 
 ---
 
