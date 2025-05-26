@@ -1,4 +1,4 @@
-# Address Book (Donna)
+# Donna - The Record Bearer
 
 A simple command‑line address book application that lets users add, edit, search, display, sort, and delete contacts. This repository walks through two versions of the project, showcasing an array‑based implementation (v1) and a linked‑list implementation (v2) with progressively improved sorting algorithms and data structures.
 
@@ -149,5 +149,3 @@ Follow on‑screen prompts to perform operations.
 ## Author
 
 **Sujal Ladde** • [laddesujal273@gmail.com](mailto:laddesujal273@gmail.com)
-
-Happy hiding! 🚀

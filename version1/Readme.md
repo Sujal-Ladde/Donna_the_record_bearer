@@ -1,4 +1,4 @@
-# Address Book (Donna) – Version 1
+# Donna – Version 1
 
 A simple command-line address book application using a fixed-size array and bubble sort for ordering.
 
@@ -126,5 +126,3 @@ Follow the prompts for each operation. Enter `0` at any prompt to cancel and ret
 ## Author
 
 **Sujal Ladde** • [laddesujal273@gmail.com](mailto:laddesujal273@gmail.com)
-
-Happy hiding! 🚀
